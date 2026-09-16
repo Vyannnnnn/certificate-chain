@@ -1,36 +1,94 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# VeriChain Academic – Certificate Chain
 
-## Getting Started
+VeriChain Academic adalah platform verifikasi sertifikat akademik berbasis blockchain yang membantu institusi pendidikan menerbitkan, menyimpan, dan memverifikasi kredensial secara cepat, aman, dan anti-manipulasi.
 
-First, run the development server:
+## Fitur Utama
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+- **Manajemen Mahasiswa**: tambah dan kelola data mahasiswa.
+- **Penerbitan Sertifikat**: generate nomor sertifikat unik dan simpan ke database.
+- **Integrasi Blockchain**: pencatatan penerbitan sertifikat ke smart contract (`txHash` tersimpan di database).
+- **Verifikasi Sertifikat**: validasi sertifikat melalui endpoint API dan halaman verifikasi.
+- **Autentikasi Admin**: login berbasis JWT (HTTP-only cookie) untuk area dashboard.
+
+## Tech Stack
+
+- **Frontend & Backend**: Next.js 16 (App Router), React 19, TypeScript
+- **Database**: PostgreSQL + Prisma
+- **Blockchain**: Solidity + Hardhat + Ethers.js
+- **UI**: Tailwind CSS, shadcn/ui
+
+## Struktur Proyek
+
+```text
+.
+├── src/                 # Aplikasi Next.js (UI, API route, auth, business logic)
+├── prisma/              # Schema, migration, seed database
+├── blockchain/          # Smart contract, konfigurasi Hardhat, script deploy
+└── public/              # Aset statis
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Persiapan Environment
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+Buat file `.env` di root project:
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```env
+DATABASE_URL="<your-postgresql-connection-string>"
+JWT_SECRET="replace-with-strong-secret"
+NEXT_PUBLIC_API_URL="http://localhost:3000"
 
-## Learn More
+RPC_URL="https://rpc-xxxxxxx"
+PRIVATE_KEY="your-wallet-private-key"
+Contract_Address="deployed-contract-address"
+```
 
-To learn more about Next.js, take a look at the following resources:
+> `Contract_Address` harus diisi alamat kontrak `CertificateRegistry` yang sudah dideploy.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Instalasi & Menjalankan Aplikasi
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+```bash
+npm install
+npx prisma migrate dev
+npm run seed
+npm run dev
+```
 
-## Deploy on Vercel
+Akses aplikasi di `http://localhost:3000`.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Akun Admin Default (Seed)
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Setelah `npm run seed`, akun berikut tersedia:
+
+- **Email**: `admin@kampus.ac.id`
+- **Password**: `password123`
+
+## Menjalankan Smart Contract (Opsional)
+
+Masuk ke folder blockchain:
+
+```bash
+cd blockchain
+npm install
+npx hardhat run scripts/deploy.ts
+```
+
+Simpan alamat kontrak hasil deploy ke variabel `.env`:
+
+- `Contract_Address` (root project)
+
+## Endpoint API Penting
+
+- `POST /api/auth/login` – login admin
+- `POST /api/auth/logout` – logout admin
+- `GET /api/students` – list mahasiswa
+- `POST /api/students` – tambah mahasiswa
+- `GET /api/certificates` – list sertifikat
+- `POST /api/certificates` – terbitkan sertifikat + catat ke blockchain
+- `GET /api/verify/{certificateNumber}` – verifikasi sertifikat
+
+## Nilai Bisnis
+
+VeriChain Academic dirancang untuk institusi pendidikan, HR, dan pihak verifikator agar proses validasi dokumen akademik menjadi:
+
+- **Lebih cepat** (real-time verification)
+- **Lebih terpercaya** (jejak audit on-chain)
+- **Lebih efisien** (otomasi proses administrasi)
